@@ -1,0 +1,7 @@
+build:
+  projects:
+    - TgcViewer\TgcViewer.csproj
+    - AlumnoEjemplos\AlumnoEjemplos.csproj
+
+install:
+  - cinst directx
