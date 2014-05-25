@@ -67,7 +67,7 @@ namespace AlumnoEjemplos.MarioKillers
             }
             this.rigidBody.ApplyForce(appliedForce);
             this.world.Step(elapsedTime);
-            this.box.setPositionSize(rigidBody.position, new Vector3(30, 30, 30));
+            this.box.setPositionSize(rigidBody.Position, new Vector3(30, 30, 30));
             this.box.updateValues();
         }
 

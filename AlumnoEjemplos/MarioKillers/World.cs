@@ -19,10 +19,10 @@ namespace AlumnoEjemplos.MarioKillers
         public void Step(float timeStep)
         {
             foreach (RigidBody body in this.bodies) {
-                body.linearVelocity += body.force * (1.0f / body.mass) * timeStep;
-                body.position += body.linearVelocity * timeStep;
+                body.LinearVelocity += body.Force * (1.0f / body.Mass) * timeStep;
+                body.Position += body.LinearVelocity * timeStep;
                 // Force has to be set to zero, otherwise it will be integrated next step
-                body.force = new Vector3(0, 0, 0);
+                body.Force = Vector3.Empty;
             }
         }
 
