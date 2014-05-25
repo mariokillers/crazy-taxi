@@ -14,6 +14,7 @@ namespace AlumnoEjemplos.MarioKillers
     public class DinamicaBasica : TgcExample
     {
         private TgcDebugBox box;
+        private World world;
         private RigidBody rigidBody;
         private TgcD3dInput input = GuiController.Instance.D3dInput;
 
@@ -40,12 +41,14 @@ namespace AlumnoEjemplos.MarioKillers
             this.box.setPositionSize(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
             this.box.Color = Color.Orange;
             this.rigidBody = new RigidBody(1.0f);
+            this.world = new World();
+            this.world.AddBody(rigidBody);
         }
 
         public override void render(float elapsedTime)
         {
             this.box.render();
-            Vector3 appliedForce;
+            Vector3 appliedForce = new Vector3(0, 0, 0);
             if (input.keyDown(Key.A))
             {
                 appliedForce = new Vector3(100, 0, 0);
@@ -62,11 +65,8 @@ namespace AlumnoEjemplos.MarioKillers
             {
                 appliedForce = new Vector3(0, 0, 100);
             }
-            else
-            {
-                appliedForce = new Vector3(0, 0, 0);
-            }
-            this.rigidBody.ApplyForce(appliedForce, elapsedTime);
+            this.rigidBody.ApplyForce(appliedForce);
+            this.world.Step(elapsedTime);
             this.box.setPositionSize(rigidBody.position, new Vector3(30, 30, 30));
             this.box.updateValues();
         }
