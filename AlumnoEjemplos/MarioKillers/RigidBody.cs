@@ -17,6 +17,10 @@ namespace AlumnoEjemplos.MarioKillers
             set { this.Shape.Rotation = value; }
         }
         public Vector3 Force = new Vector3(0, 0, 0);
+
+        /// <summary>
+        /// Mass of the body in kilograms
+        /// </summary>
         public float Mass;
         public Shape Shape;
         public bool AlphaBlendEnable { get; set; }
