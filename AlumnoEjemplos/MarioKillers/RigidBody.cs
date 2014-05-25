@@ -1,5 +1,7 @@
 ﻿using Microsoft.DirectX;
 using System;
+using System.Drawing;
+using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils.TgcSceneLoader;
 
 namespace AlumnoEjemplos.MarioKillers
@@ -23,7 +25,7 @@ namespace AlumnoEjemplos.MarioKillers
         /// </summary>
         public float Mass;
         public Shape Shape;
-        public bool AlphaBlendEnable { get; set; }
+        public TgcBoundingSphere BoundingSphere { get { return this.Shape.BoundingSphere; } }
 
         public RigidBody(float mass, Shape shape)
         {

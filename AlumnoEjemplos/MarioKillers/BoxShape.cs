@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using TgcViewer.Utils.TgcGeometry;
 using System.Drawing;
+using TgcViewer.Utils.TgcSceneLoader;
 
 namespace AlumnoEjemplos.MarioKillers
 {
@@ -51,6 +52,11 @@ namespace AlumnoEjemplos.MarioKillers
         {
             get { return this.box.Scale; }
             set { this.box.Scale = value; }
+        }
+
+        public override TgcMesh Mesh
+        {
+            get { return this.box.toMesh(""); }
         }
     }
 }

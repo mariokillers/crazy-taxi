@@ -40,6 +40,7 @@ namespace AlumnoEjemplos.MarioKillers
             this.input = GuiController.Instance.D3dInput;
             GuiController.Instance.RotCamera.setCamera(new Vector3(0, 0, 0), 100);
             this.modifiers.addBoolean("GravityEnabled", "Gravedad", false);
+            this.modifiers.addBoolean("DebugEnabled", "Debug", true);
 
             this.box = BoxShape.fromSize(new Vector3(10, 10, 10), Color.Orange);
             this.rigidBody = new RigidBody(1.0f, box);
@@ -77,6 +78,7 @@ namespace AlumnoEjemplos.MarioKillers
             }
             this.rigidBody.ApplyForce(appliedForce);
             this.world.GravityEnabled = (bool) this.modifiers.getValue("GravityEnabled");
+            this.world.DebugEnabled = (bool)this.modifiers.getValue("DebugEnabled");
             this.world.Step(elapsedTime);
             this.world.Render();
         }

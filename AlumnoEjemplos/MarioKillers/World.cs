@@ -16,6 +16,12 @@ namespace AlumnoEjemplos.MarioKillers
         public bool GravityEnabled = false;
 
         /// <summary>
+        /// Debug mode for the world. If enabled, draws bounding objects
+        /// for rigid bodies.
+        /// </summary>
+        public bool DebugEnabled = false;
+
+        /// <summary>
         /// Integrates the whole world forward in time.
         /// Uses Euler's method for integration.
         /// </summary>
@@ -44,6 +50,10 @@ namespace AlumnoEjemplos.MarioKillers
             foreach (RigidBody body in this.bodies)
             {
                 body.Render();
+                if (this.DebugEnabled)
+                {
+                    body.BoundingSphere.render();
+                }
             }
         }
 
