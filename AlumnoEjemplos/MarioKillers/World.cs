@@ -30,5 +30,21 @@ namespace AlumnoEjemplos.MarioKillers
         {
             this.bodies.Add(body);
         }
+
+        public void Render()
+        {
+            foreach (RigidBody body in this.bodies)
+            {
+                body.Render();
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (RigidBody body in this.bodies)
+            {
+                body.Dispose();
+            }
+        }
     }
 }

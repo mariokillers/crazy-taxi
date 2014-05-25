@@ -13,7 +13,7 @@ namespace AlumnoEjemplos.MarioKillers
     /// </summary>
     public class DinamicaBasica : TgcExample
     {
-        private TgcDebugBox box;
+        private Shape box;
         private World world;
         private RigidBody rigidBody;
         private TgcD3dInput input = GuiController.Instance.D3dInput;
@@ -37,17 +37,14 @@ namespace AlumnoEjemplos.MarioKillers
         {
             this.input = GuiController.Instance.D3dInput;
             GuiController.Instance.RotCamera.setCamera(new Vector3(0, 0, 0), 100);
-            this.box = new TgcDebugBox();
-            this.box.setPositionSize(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-            this.box.Color = Color.Orange;
-            this.rigidBody = new RigidBody(1.0f);
+            this.box = BoxShape.fromSize(new Vector3(10, 10, 10), Color.Orange);
+            this.rigidBody = new RigidBody(1.0f, box);
             this.world = new World();
             this.world.AddBody(rigidBody);
         }
 
         public override void render(float elapsedTime)
         {
-            this.box.render();
             Vector3 appliedForce = new Vector3(0, 0, 0);
             if (input.keyDown(Key.A))
             {
@@ -67,13 +64,12 @@ namespace AlumnoEjemplos.MarioKillers
             }
             this.rigidBody.ApplyForce(appliedForce);
             this.world.Step(elapsedTime);
-            this.box.setPositionSize(rigidBody.Position, new Vector3(30, 30, 30));
-            this.box.updateValues();
+            this.world.Render();
         }
 
         public override void close()
         {
-            this.box.dispose();
+            this.world.Dispose();
         }
     }
 }

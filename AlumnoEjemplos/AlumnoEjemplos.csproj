@@ -87,9 +87,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MarioKillers\BoxShape.cs" />
     <Compile Include="MarioKillers\Ejemplos\DinamicaBasica.cs" />
     <Compile Include="MarioKillers\EjemploAlumno.cs" />
     <Compile Include="MarioKillers\RigidBody.cs" />
+    <Compile Include="MarioKillers\Shape.cs" />
     <Compile Include="MarioKillers\World.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
