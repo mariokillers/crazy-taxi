@@ -1,34 +1,44 @@
 ﻿using Microsoft.DirectX;
 using System;
+using System.Collections.Generic;
 using TgcViewer.Utils.TgcSceneLoader;
 
 namespace AlumnoEjemplos.MarioKillers
 {
     public class RigidBody
     {
-        public Vector3 Position {
-            get { return this.Shape.Position; }
-            set { this.Shape.Position = value; }
+        public Vector3 Position = Vector3.Empty;
+        public Vector3 LinearVelocity = Vector3.Empty;
+        public Vector3 AngularVelocity = Vector3.Empty;
+        public Vector3 AngularMomentum = Vector3.Empty;
+        public Vector3 Rotation
+        {
+            get { return this.Mesh.Rotation; }
+            set { this.Mesh.Rotation = value; }
         }
-        public Vector3 LinearVelocity = new Vector3(0, 0, 0);
-        public Vector3 AngularVelocity = new Vector3(0, 0, 0);
-        public Vector3 Rotation {
-            get { return this.Shape.Rotation; }
-            set { this.Shape.Rotation = value; }
+        public Matrix Transform
+        {
+            get { return this.Mesh.Transform; }
+            set { this.Mesh.Transform = value; }
         }
-        public Vector3 Force = new Vector3(0, 0, 0);
+        public Matrix Orientation = Matrix.Identity;
+        public Matrix InvInertiaTensor = Matrix.Invert(Matrix.Identity);
+
+        /// <summary>
+        /// The impulses that have been applied to the body in this frame.
+        /// </summary>
+        public List<Impulse> Impulses = new List<Impulse>();
 
         /// <summary>
         /// Mass of the body in kilograms
         /// </summary>
         public float Mass;
-        public Shape Shape;
-        public bool AlphaBlendEnable { get; set; }
+        public TgcMesh Mesh;
 
-        public RigidBody(float mass, Shape shape)
+        public RigidBody(float mass, TgcMesh Mesh)
         {
-            this.Shape = shape;
-            this.Position = Vector3.Empty;
+            this.Mesh = Mesh;
+            this.Mesh.AutoTransformEnable = false;
             if (mass <= 0.0) throw new ArgumentException("A rigid body's mass must be positive");
             this.Mass = mass;
         }
@@ -40,19 +50,38 @@ namespace AlumnoEjemplos.MarioKillers
         /// is needed for this method.
         /// </summary>
         /// <param name="force">The force to apply.</param>
-        public void ApplyForce(Vector3 force)
+        public void ApplyImpulse(Vector3 force)
         {
-            this.Force += force;
+            this.Impulses.Add(new Impulse(force, Vector3.Empty));
+        }
+
+        /// <summary>
+        /// Applies an impulse force to the body at a specified position,
+        /// relative to the body's coordinates. This will cause the body
+        /// to move and rotate.
+        ///
+        /// New position and velocity values will be calculated when the
+        /// world is stepped forward, which is why no timestep value
+        /// is needed for this method.
+        /// <param name="Force">The force to apply.</param>
+        /// <param name="RelativePosition">
+        ///     The point of application in body coordinates.
+        /// </param>
+        /// </summary>
+        public void ApplyImpulse(Vector3 Force, Vector3 RelativePosition)
+        {
+            this.Impulses.Add(new Impulse(Force, RelativePosition));
         }
 
         public void Render()
         {
-            this.Shape.render();
+            this.Mesh.render();
         }
 
         public void Dispose()
         {
-            this.Shape.dispose();
+            this.Mesh.dispose();
         }
     }
+
 }

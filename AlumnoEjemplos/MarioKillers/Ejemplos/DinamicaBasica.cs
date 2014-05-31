@@ -6,6 +6,7 @@ using TgcViewer.Example;
 using TgcViewer.Utils.Input;
 using TgcViewer.Utils.Modifiers;
 using TgcViewer.Utils.TgcGeometry;
+using TgcViewer.Utils.TgcSceneLoader;
 
 namespace AlumnoEjemplos.MarioKillers
 {
@@ -14,7 +15,9 @@ namespace AlumnoEjemplos.MarioKillers
     /// </summary>
     public class DinamicaBasica : TgcExample
     {
-        private Shape box;
+        private TgcMesh box;
+        TgcTexture texture = TgcTexture.createTexture(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Textures\\Madera\\cajaMadera3.jpg");
+
         private World world;
         private RigidBody rigidBody;
         private TgcD3dInput input = GuiController.Instance.D3dInput;
@@ -40,9 +43,8 @@ namespace AlumnoEjemplos.MarioKillers
             this.input = GuiController.Instance.D3dInput;
             GuiController.Instance.RotCamera.setCamera(new Vector3(0, 0, 0), 100);
             this.modifiers.addBoolean("GravityEnabled", "Gravedad", false);
-
-            this.box = BoxShape.fromSize(new Vector3(10, 10, 10), Color.Orange);
-            this.rigidBody = new RigidBody(1.0f, box);
+            this.box = TgcBox.fromSize(new Vector3(0,0,0),new Vector3(10, 10, 10),texture).toMesh("caja");
+            this.rigidBody = new RigidBody(10f, box);
             this.world = new World();
             this.world.AddBody(rigidBody);
         }
@@ -53,19 +55,19 @@ namespace AlumnoEjemplos.MarioKillers
             // TODO: Refactor this into an input handler
             if (input.keyDown(Key.A))
             {
-                appliedForce = new Vector3(100, 0, 0);
+                appliedForce = new Vector3(0.001f, 0, 0);
             }
             else if (input.keyDown(Key.D))
             {
-                appliedForce = new Vector3(-100, 0, 0);
+                appliedForce = new Vector3(-0.001f, 0, 0);
             }
             else if (input.keyDown(Key.W))
             {
-                appliedForce = new Vector3(0, 0, -100);
+                appliedForce = new Vector3(0, 0, -0.001f);
             }
             else if (input.keyDown(Key.S))
             {
-                appliedForce = new Vector3(0, 0, 100);
+                appliedForce = new Vector3(0, 0, 0.001f);
             }
             else if (input.keyDown(Key.Space))
             {
@@ -73,10 +75,10 @@ namespace AlumnoEjemplos.MarioKillers
             }
             else if (input.keyDown(Key.LeftControl))
             {
-                appliedForce = new Vector3(0, -100, 0);
+                appliedForce = new Vector3(0, -0.01f, 0);
             }
-            this.rigidBody.ApplyForce(appliedForce);
-            this.world.GravityEnabled = (bool) this.modifiers.getValue("GravityEnabled");
+            this.rigidBody.ApplyImpulse(appliedForce, new Vector3(4f,10f,0));
+            this.world.GravityEnabled = (bool)this.modifiers.getValue("GravityEnabled");
             this.world.Step(elapsedTime);
             this.world.Render();
         }

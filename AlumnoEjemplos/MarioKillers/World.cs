@@ -1,8 +1,6 @@
 ﻿using Microsoft.DirectX;
-using System;
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace AlumnoEjemplos.MarioKillers
 {
@@ -22,15 +20,25 @@ namespace AlumnoEjemplos.MarioKillers
         /// <param name="timeStep">Timestep in seconds</param>
         public void Step(float timeStep)
         {
-            foreach (RigidBody body in this.bodies) {
+            foreach (RigidBody body in this.bodies)
+            {
                 if (this.GravityEnabled)
                 {
-                    body.ApplyForce(body.Mass * this.GravityAcceleration);
+                    body.ApplyImpulse(body.Mass * this.GravityAcceleration);
                 }
-                body.LinearVelocity += body.Force * (1.0f / body.Mass) * timeStep;
-                body.Position += body.LinearVelocity * timeStep;
-                // Force has to be set to zero, otherwise it will be integrated next step
-                body.Force = Vector3.Empty;
+                foreach (Impulse impulse in body.Impulses)
+                {
+                    body.LinearVelocity += impulse.Force * (1.0f / body.Mass) * timeStep;
+                    body.Position += body.LinearVelocity * timeStep;
+                    body.AngularMomentum += timeStep * impulse.Torque();
+
+                    Matrix Aux = body.Orientation * body.InvInertiaTensor * Matrix.TransposeMatrix(body.Orientation);
+                    body.AngularVelocity = Vector3.TransformCoordinate(body.AngularMomentum, Aux);
+                    body.Orientation *= Matrix.RotationAxis(body.AngularVelocity, body.AngularVelocity.Length());
+                    body.Transform = body.Orientation * Matrix.Translation(body.Position);
+                }
+                // Impulses have to be removed, otherwise they will be integrated next frame
+                body.Impulses.Clear();
             }
         }
 
