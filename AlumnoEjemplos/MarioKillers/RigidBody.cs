@@ -41,6 +41,7 @@ namespace AlumnoEjemplos.MarioKillers
             this.Mesh.AutoTransformEnable = false;
             if (mass <= 0.0) throw new ArgumentException("A rigid body's mass must be positive");
             this.Mass = mass;
+            this.InvInertiaTensor = Matrix.Invert(boxInertiaTensor(10, 10, 10, mass));
         }
 
         /// <summary>
@@ -81,6 +82,16 @@ namespace AlumnoEjemplos.MarioKillers
         public void Dispose()
         {
             this.Mesh.dispose();
+        }
+
+        private Matrix boxInertiaTensor(float x, float y, float z, float mass)
+        {
+            Matrix result = Matrix.Zero;
+            result.M11 = (mass / 12) * (y*y + z*z);
+            result.M22 = (mass / 12) * (x * x + z * z);
+            result.M33 = (mass / 12) * (x * x + y * y);
+            result.M44 = 1;
+            return result;
         }
     }
 
