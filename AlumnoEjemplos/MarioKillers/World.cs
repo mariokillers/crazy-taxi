@@ -11,7 +11,13 @@ namespace AlumnoEjemplos.MarioKillers
         /// The acceleration of gravity, in m/s^2.
         /// </summary>
         public Vector3 GravityAcceleration = new Vector3(0, -9.81f, 0);
+
         public bool GravityEnabled = false;
+
+        /// <summary>
+        /// If enabled, draws bounding spheres around every rigid body.
+        /// </summary>
+        public bool DebugEnabled = false;
 
         /// <summary>
         /// Integrates the whole world forward in time.
@@ -58,6 +64,10 @@ namespace AlumnoEjemplos.MarioKillers
         {
             foreach (RigidBody body in this.bodies)
             {
+                if (this.DebugEnabled)
+                {
+                    body.BoundingSphere.render();
+                }
                 body.Render();
             }
         }

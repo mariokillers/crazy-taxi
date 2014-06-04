@@ -1,13 +1,19 @@
 ﻿using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
+using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils.TgcSceneLoader;
 
 namespace AlumnoEjemplos.MarioKillers
 {
     public class RigidBody
     {
-        public Vector3 Position = Vector3.Empty;
+        private Vector3 position;
+        public Vector3 Position
+        {
+            get { return this.position; }
+            set { this.position = value; this.BoundingSphere.setCenter(value); }
+        }
         public Vector3 LinearVelocity = Vector3.Empty;
         public Vector3 AngularVelocity = Vector3.Empty;
         public Vector3 AngularMomentum = Vector3.Empty;
@@ -35,6 +41,15 @@ namespace AlumnoEjemplos.MarioKillers
         public float Mass;
         public TgcMesh Mesh;
 
+        public TgcBoundingSphere BoundingSphere;
+
+        public bool IsIntersectingWith(RigidBody other)
+        {
+            Vector3 centerDiff = this.BoundingSphere.Center - other.BoundingSphere.Center;
+            float radiusSum = this.BoundingSphere.Radius + other.BoundingSphere.Radius;
+            return Vector3.Dot(centerDiff, centerDiff) <= radiusSum * radiusSum;
+        }
+
         public RigidBody(float mass, TgcMesh Mesh)
         {
             this.Mesh = Mesh;
@@ -42,6 +57,7 @@ namespace AlumnoEjemplos.MarioKillers
             if (mass <= 0.0) throw new ArgumentException("A rigid body's mass must be positive");
             this.Mass = mass;
             this.InvInertiaTensor = Matrix.Invert(boxInertiaTensor(10, 10, 10, mass));
+            this.BoundingSphere = TgcBoundingSphere.computeFromMesh(Mesh);
         }
 
         /// <summary>
@@ -87,7 +103,7 @@ namespace AlumnoEjemplos.MarioKillers
         private Matrix boxInertiaTensor(float x, float y, float z, float mass)
         {
             Matrix result = Matrix.Zero;
-            result.M11 = (mass / 12) * (y*y + z*z);
+            result.M11 = (mass / 12) * (y * y + z * z);
             result.M22 = (mass / 12) * (x * x + z * z);
             result.M33 = (mass / 12) * (x * x + y * y);
             result.M44 = 1;
