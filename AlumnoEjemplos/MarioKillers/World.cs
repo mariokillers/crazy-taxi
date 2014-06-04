@@ -32,7 +32,6 @@ namespace AlumnoEjemplos.MarioKillers
                     Matrix Aux = body.Orientation * body.InvInertiaTensor * Matrix.TransposeMatrix(body.Orientation);
                     body.AngularVelocity = Vector3.TransformCoordinate(body.AngularMomentum, Aux);
                     body.Orientation *= Matrix.RotationAxis(body.AngularVelocity, body.AngularVelocity.Length());
-                    body.Transform = body.Orientation * Matrix.Translation(body.Position);
 
                     if (impulse.RelativePosition == Vector3.Empty)
                     {
@@ -42,8 +41,9 @@ namespace AlumnoEjemplos.MarioKillers
                     {
                         body.LinearVelocity += Vector3.Cross(body.AngularVelocity, impulse.RelativePosition);
                     }
-                    body.Position += body.LinearVelocity * timeStep;
                 }
+                body.Transform = body.Orientation * Matrix.Translation(body.Position);
+                body.Position += body.LinearVelocity * timeStep;
                 // Impulses have to be removed, otherwise they will be integrated next frame
                 body.Impulses.Clear();
             }
