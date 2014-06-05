@@ -1,6 +1,7 @@
 ﻿using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils.TgcSceneLoader;
 
@@ -59,7 +60,7 @@ namespace AlumnoEjemplos.MarioKillers
             if (mass <= 0.0) throw new ArgumentException("A rigid body's mass must be positive");
             this.Mass = mass;
             this.InvInertiaTensor = Matrix.Invert(boxInertiaTensor(10, 10, 10, mass));
-            this.BoundingSphere = TgcBoundingSphere.computeFromMesh(Mesh);
+            this.BoundingSphere = boundingSphereFromPoints(Mesh.getVertexPositions());
         }
 
         /// <summary>
@@ -150,6 +151,19 @@ namespace AlumnoEjemplos.MarioKillers
             result.M33 = (mass / 12) * (x * x + y * y);
             result.M44 = 1;
             return result;
+        }
+
+        /// <summary>
+        /// Utility method to calculate bounding spheres with greater precision
+        /// than TgcBoundingSphere.computeFromMesh()
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        private TgcBoundingSphere boundingSphereFromPoints(Vector3[] vertices)
+        {
+            Vector3 center = this.Mesh.BoundingBox.calculateBoxCenter();
+            float radius = vertices.Max(v => (v - this.Position).Length());
+            return new TgcBoundingSphere(center, radius);
         }
     }
 
