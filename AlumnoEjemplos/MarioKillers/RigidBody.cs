@@ -43,6 +43,8 @@ namespace AlumnoEjemplos.MarioKillers
 
         public TgcBoundingSphere BoundingSphere;
 
+        public float Elasticity = 1.0f;
+
         public bool IsIntersectingWith(RigidBody other)
         {
             Vector3 centerDiff = this.BoundingSphere.Center - other.BoundingSphere.Center;
@@ -98,6 +100,46 @@ namespace AlumnoEjemplos.MarioKillers
         public void Dispose()
         {
             this.Mesh.dispose();
+        }
+
+        public void HandleCollisionWith(RigidBody other)
+        {
+            Vector3 relativeVelocity = this.LinearVelocity - other.LinearVelocity;
+            float vDotN = Vector3.Dot(relativeVelocity, collisionNormal(other));
+            // If the bodies are moving away from each other, nothing needs to be done
+            if (vDotN < 0) return;
+            // Calculate impulse factor
+            float modifiedVel = vDotN / (1.0f / this.Mass + 1.0f / other.Mass);
+            float j1 = -(1.0f + this.Elasticity) * modifiedVel;
+            float j2 = -(1.0f + other.Elasticity) * modifiedVel;
+            // Update velocities
+            this.LinearVelocity += j1 / this.Mass * collisionNormal(other);
+            other.LinearVelocity -= j2 / other.Mass * collisionNormal(other);
+        }
+
+        private Vector3 collisionNormal(RigidBody other)
+        {
+            return Vector3.Normalize(other.BoundingSphere.Center - this.BoundingSphere.Center);
+        }
+
+        /// <summary>
+        /// Push penetrating objects away from each other to ensure there is only one
+        /// point of collision between them.
+        /// </summary>
+        /// <param name="other">The other penetrating body.</param>
+        private void removePenetrationWith(RigidBody other)
+        {
+            float distance = penetrationDistance(other);
+            Vector3 centerDiff = this.Position - other.Position;
+            this.Position -= 0.5f * distance * centerDiff;
+            other.Position += 0.5f * distance * centerDiff;
+        }
+
+        private float penetrationDistance(RigidBody other)
+        {
+            float radiusSum = this.BoundingSphere.Radius + other.BoundingSphere.Radius;
+            Vector3 normalDirection = other.BoundingSphere.Center - this.BoundingSphere.Center;
+            return radiusSum - Vector3.Length(normalDirection);
         }
 
         private Matrix boxInertiaTensor(float x, float y, float z, float mass)

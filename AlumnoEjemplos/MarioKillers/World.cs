@@ -6,7 +6,7 @@ namespace AlumnoEjemplos.MarioKillers
 {
     public class World
     {
-        private List<RigidBody> bodies = new List<RigidBody>();
+        public List<RigidBody> Bodies = new List<RigidBody>();
         /// <summary>
         /// The acceleration of gravity, in m/s^2.
         /// </summary>
@@ -26,7 +26,7 @@ namespace AlumnoEjemplos.MarioKillers
         /// <param name="timeStep">Timestep in seconds</param>
         public void Step(float timeStep)
         {
-            foreach (RigidBody body in this.bodies)
+            foreach (RigidBody body in this.Bodies)
             {
                 if (this.GravityEnabled)
                 {
@@ -52,17 +52,37 @@ namespace AlumnoEjemplos.MarioKillers
                 body.Position += body.LinearVelocity * timeStep;
                 // Impulses have to be removed, otherwise they will be integrated next frame
                 body.Impulses.Clear();
+
+                this.HandleCollisions();
+            }
+        }
+
+        /// <summary>
+        /// Process collisions between all the bodies in the World through brute force.
+        /// Collisions are tested pairwise between every body, which is inefficient.
+        /// </summary>
+        public void HandleCollisions()
+        {
+            foreach (RigidBody body in this.Bodies)
+            {
+                foreach (RigidBody otherBody in this.Bodies)
+                {
+                    if (body != otherBody && body.IsIntersectingWith(otherBody))
+                    {
+                        body.HandleCollisionWith(otherBody);
+                    }
+                }
             }
         }
 
         public void AddBody(RigidBody body)
         {
-            this.bodies.Add(body);
+            this.Bodies.Add(body);
         }
 
         public void Render()
         {
-            foreach (RigidBody body in this.bodies)
+            foreach (RigidBody body in this.Bodies)
             {
                 if (this.DebugEnabled)
                 {
@@ -74,7 +94,7 @@ namespace AlumnoEjemplos.MarioKillers
 
         public void Dispose()
         {
-            foreach (RigidBody body in this.bodies)
+            foreach (RigidBody body in this.Bodies)
             {
                 body.Dispose();
             }

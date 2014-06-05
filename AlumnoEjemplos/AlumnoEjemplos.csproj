@@ -88,9 +88,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MarioKillers\BoxShape.cs" />
+    <Compile Include="MarioKillers\Ejemplos\ColisionCaos.cs" />
+    <Compile Include="MarioKillers\Ejemplos\ColisionEsferas.cs" />
     <Compile Include="MarioKillers\Ejemplos\DinamicaBasica.cs" />
     <Compile Include="MarioKillers\EjemploAlumno.cs" />
-    <Compile Include="MarioKillers\Ejemplos\InterseccionEsferas.cs" />
     <Compile Include="MarioKillers\Impulse.cs" />
     <Compile Include="MarioKillers\RigidBody.cs" />
     <Compile Include="MarioKillers\Shape.cs" />
