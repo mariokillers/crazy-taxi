@@ -31,7 +31,11 @@ namespace AlumnoEjemplos.MarioKillers
         {
             foreach (RigidBody body in this.Bodies)
             {
-                body.Impulses.Add(body.FRoz);
+                if (body.FRoz!=null)
+                {
+                    body.Impulses.Add(body.FRoz);
+                    body.FRoz = null;
+                }
                 if (this.GravityEnabled)
                 {
                     if (body.affectedByGravity==true) {

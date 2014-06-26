@@ -93,7 +93,7 @@ namespace AlumnoEjemplos.MarioKillers.Ejemplos
             string mesa = GuiController.Instance.ExamplesMediaDir + "ModelosTgc\\famosisimamesadepool-TgcScene.xml";
 
             world = new World();
-            world.DebugEnabled = true;
+           // world.DebugEnabled = true;
             //Mesa = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "ModelosTgc\\Sphere\\Sphere-TgcScene.xml").Meshes[0];
             setPelotas(loader, sphere, d3dDevice);
             
@@ -110,23 +110,10 @@ namespace AlumnoEjemplos.MarioKillers.Ejemplos
             }
            
              world.GravityEnabled = true;
-            TgcBox caja = TgcBox.fromSize(new Vector3(0, 25, 0),new Vector3 (100,1,100));
-            TgcBox caja2 = TgcBox.fromSize(new Vector3(0, 25, 0), new Vector3(100, 15, 2));
-            TgcBox caja3 = TgcBox.fromSize(new Vector3(0, 25, 0), new Vector3(100, 15, 2));
-            TgcBox caja4 = TgcBox.fromSize(new Vector3(0, 25, 0), new Vector3(100, 15, 2));
-            TgcBox caja5 = TgcBox.fromSize(new Vector3(0, 25, 0), new Vector3(100, 15, 2));
-
-            caja2.AutoTransformEnable = false;
-            caja3.AutoTransformEnable = false;
-            caja4.AutoTransformEnable = false;
-            caja5.AutoTransformEnable = false;
-            caja.AutoTransformEnable = false;
-            caja2.Transform = Matrix.Translation(new Vector3(0, 25, -25));
-            caja.Transform = Matrix.Translation(new Vector3(0, 25, 0));
+            
             //world.AddStaticBody(caja2.toMesh("caja2"));
             //world.AddStaticBody(caja.toMesh("caja"));
-            caja.render();
-            caja2.render();
+            
             GuiController.Instance.RotCamera.setCamera(new Vector3(-44, 200, 175),100);
             GuiController.Instance.RotCamera.targetObject(Mesa.BoundingBox);
 
@@ -230,7 +217,6 @@ namespace AlumnoEjemplos.MarioKillers.Ejemplos
 
                 //Renderizar modelo
                 mesh.render();
-                mesh.BoundingBox.render();
             }
             foreach (TgcMesh mesh in Mesa.Meshes)
             {

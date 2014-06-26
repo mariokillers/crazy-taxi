@@ -310,10 +310,10 @@ namespace AlumnoEjemplos.MarioKillers
             this.LinearVelocity += Vector3.Multiply(planeNormal, planeNormalVelocity);
 
             Vector3 Acceleration = LinearVelocity - antVelocity;
-            float PlaneNormalAcceleration = Vector3.Dot(Acceleration, planeNormal);
-            float RozForce = Mass * PlaneNormalAcceleration * 0.000002f;
-            Console.WriteLine(RozForce);
-            this.FRoz =new Impulse(Vector3.Multiply(Vector3.Normalize(-LinearVelocity), RozForce), collisionPoint);
+            Acceleration = Acceleration - Vector3.Multiply(planeNormal, Vector3.Dot(Acceleration, planeNormal));
+            Vector3 RozForce = Mass * -Acceleration * 2f;
+           
+            this.FRoz =new Impulse( RozForce, collisionPoint);
 
             //float j1 = -(1.0f + this.Elasticity) * planeNormalVelocity;
             //AngularMomentum += Vector3.Cross(collisionPoint, j1 * Vector3.Normalize(planeNormal));
