@@ -276,7 +276,7 @@ namespace AlumnoEjemplos.MarioKillers
 
                         if (collisionFound)
                         {
-                            this.HandleStaticCollisionWith(sphereIntersectionPoint, bbFace, obstaculoBB);
+                            this.HandleStaticCollisionWith(sphereIntersectionPoint,planeIntersectionPoint, bbFace, obstaculoBB);
                             //Nuevo vector de movimiento acotado
                             /*newMovementVector = polygonIntersectionPoint - sphereIntersectionPoint;
                             newMoveDistSq = newMovementVector.LengthSq();
@@ -299,27 +299,36 @@ namespace AlumnoEjemplos.MarioKillers
 
         }
 
-        public void HandleStaticCollisionWith(Vector3 collisionPoint, TgcBoundingBox.Face staticBodieFace, TgcBoundingBox staticBody)
+        public void HandleStaticCollisionWith(Vector3 collisionPoint, Vector3 planeIntersectionPoint, TgcBoundingBox.Face staticBodieFace, TgcBoundingBox staticBody)
         {
             //this.LinearVelocity = Vector3.Empty;
             //this.BoundingSphere.render();
+            Vector3 collisionNormal = collisionPoint - planeIntersectionPoint;
+            Vector3.Normalize(collisionNormal);
             Vector3 planeNormal = TgcCollisionUtils.getPlaneNormal(staticBodieFace.Plane);
             float planeNormalVelocity = Vector3.Dot(LinearVelocity, planeNormal);
-
+            float modifiedVel = planeNormalVelocity / (1.0f / this.Mass);
             planeNormalVelocity = -(1.0f + this.Elasticity) * planeNormalVelocity;
             this.LinearVelocity += Vector3.Multiply(planeNormal, planeNormalVelocity);
-
+            /*
             Vector3 Acceleration = LinearVelocity - antVelocity;
             Acceleration = Acceleration - Vector3.Multiply(planeNormal, Vector3.Dot(Acceleration, planeNormal));
-            Vector3 RozForce = Mass * -Acceleration * 2f;
+            Vector3 RozForce = Mass * -Acceleration * 0.02f;
            
             this.FRoz =new Impulse( RozForce, collisionPoint);
+            */
+            /*
+            float j1 = -(1.0f + this.Elasticity) * modifiedVel;
+            if (Vector3.Cross(collisionPoint, j1 * Vector3.Normalize(planeNormal)) != Vector3.Empty)
+            {
+                Console.WriteLine(collisionPoint);
+                Console.WriteLine(j1);
 
-            //float j1 = -(1.0f + this.Elasticity) * planeNormalVelocity;
-            //AngularMomentum += Vector3.Cross(collisionPoint, j1 * Vector3.Normalize(planeNormal));
+            }
+            AngularMomentum += Vector3.Cross(collisionPoint, j1 * Vector3.Normalize(planeNormal));
             //WorldMomentsInverse
-            //Matrix WorldMomentsInverse = this.Orientation * this.InvInertiaTensor * Matrix.TransposeMatrix(this.Orientation);
-            //AngularVelocity = Vector3.TransformCoordinate(AngularMomentum,WorldMomentsInverse);
+            Matrix WorldMomentsInverse = this.Orientation * this.InvInertiaTensor * Matrix.TransposeMatrix(this.Orientation);
+            AngularVelocity = Vector3.TransformCoordinate(AngularMomentum,WorldMomentsInverse);
 
             /*
             Vector3 RelativeCollisionPoint = collisionPoint - this.Position;
