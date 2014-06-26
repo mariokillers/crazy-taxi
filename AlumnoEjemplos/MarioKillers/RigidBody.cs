@@ -1,4 +1,4 @@
-ï»¿using Microsoft.DirectX;
+using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,25 +113,51 @@ namespace AlumnoEjemplos.MarioKillers
             this.Mesh.dispose();
         }
 
+        public Matrix WorldMomentsInverse
+        {
+            get
+            {
+                return this.Orientation * this.InvInertiaTensor * Matrix.TransposeMatrix(this.Orientation);
+            }
+        }
+
         public void HandleCollisionWith(RigidBody other)
         {
-            Vector3 relativeVelocity = this.LinearVelocity - other.LinearVelocity;
-            float vDotN = Vector3.Dot(relativeVelocity, collisionNormal(other));
+            
+            Vector3 cNormal = this.collisionNormal(other);
+            Vector3 collisionPoint = 0.5f * (this.Position + this.BoundingSphere.Radius * cNormal)
+                + 0.5f * (other.Position - other.BoundingSphere.Radius * cNormal);
+            Vector3 r1 = collisionPoint - this.Position;
+            Vector3 r2 = collisionPoint - other.Position;
+            Vector3 vel1 = this.LinearVelocity + Vector3.Cross(this.AngularVelocity, r1);
+            Vector3 vel2 = other.LinearVelocity + Vector3.Cross(other.AngularVelocity, r2);
+            Vector3 relativeVelocity = vel1 - vel2;
+
+            float vDotN = Vector3.Dot(relativeVelocity, cNormal);
             // If the bodies are moving away from each other, nothing needs to be done
             if (vDotN < 0) return;
-            // Calculate impulse factor
-            float modifiedVel = vDotN / (1.0f / this.Mass + 1.0f / other.Mass);
-            
+
+            // Impulse factor
+            float denominator = (1.0f / this.Mass + 1.0f / other.Mass) * Vector3.Dot(cNormal, cNormal);
+            // Angular factors
+            Vector3 cross1 = Vector3.Cross(r1, cNormal);
+            Vector3 cross2 = Vector3.Cross(r2, cNormal);
+            cross1 = Vector3.TransformCoordinate(cross1, this.WorldMomentsInverse);
+            cross2 = Vector3.TransformCoordinate(cross2, other.WorldMomentsInverse);
+            Vector3 sum = Vector3.Cross(cross1, r1) + Vector3.Cross(cross2, r2);
+            denominator += Vector3.Dot(sum, cNormal);
+            float modifiedVel = vDotN / denominator;
             float j1 = -(1.0f + this.Elasticity) * modifiedVel;
             float j2 = -(1.0f + other.Elasticity) * modifiedVel;
-            /*if (other.strong)
-            {
-                j1 += j2;
-                j2 -= j1;
-            }*/
             // Update velocities
-            this.LinearVelocity += j1 / this.Mass * collisionNormal(other);
-            other.LinearVelocity -= j2 / other.Mass * collisionNormal(other);
+            this.LinearVelocity += j1 / this.Mass * cNormal;
+            other.LinearVelocity -= j2 / other.Mass * cNormal;
+            // Update angular velocities
+            this.AngularMomentum += Vector3.Cross(r1, j1 * cNormal) ;
+            this.AngularVelocity = Vector3.TransformCoordinate(this.AngularMomentum, this.WorldMomentsInverse);
+            other.AngularMomentum += Vector3.Cross(r2, j2 * cNormal);
+            other.AngularVelocity = Vector3.TransformCoordinate(other.AngularMomentum, other.WorldMomentsInverse);
+
         }
 
         private Vector3 collisionNormal(RigidBody other)
@@ -184,7 +210,7 @@ namespace AlumnoEjemplos.MarioKillers
 
 
         /// <summary>
-        /// DetecciÃ³n de colisiones recursiva
+        /// Detección de colisiones recursiva
         /// </summary>
         public void doCollideWithWorld(Vector3 movementVector, int recursionDepth)
         {
@@ -219,7 +245,7 @@ namespace AlumnoEjemplos.MarioKillers
             {
                 TgcBoundingBox obstaculoBB = obstaculo.BoundingBox;
                 obstaculoBB.render();
-                //Obtener los polÃ­gonos que conforman las 6 caras del BoundingBox
+                //Obtener los polígonos que conforman las 6 caras del BoundingBox
                 TgcBoundingBox.Face[] bbFaces = obstaculoBB.computeFaces();
                 
 
@@ -242,7 +268,7 @@ namespace AlumnoEjemplos.MarioKillers
                    }*/
 
 
-                    //Obtener punto de colisiÃ³n en el plano, segÃºn la normal del plano
+                    //Obtener punto de colisión en el plano, según la normal del plano
                     float pDist;
                     Vector3 planeIntersectionPoint;
                     Vector3 sphereIntersectionPoint = Vector3.Empty;
@@ -253,20 +279,20 @@ namespace AlumnoEjemplos.MarioKillers
                     {
                         //Console.WriteLine("PDIST:"+ pDist);
                         //Console.WriteLine("RADIUS" + characterSphere.Radius);
-                        //Ver si el plano estÃ¡ embebido en la esfera
+                        //Ver si el plano está embebido en la esfera
                         if (pDist <= characterSphere.Radius)
                         {
                             embebbed = true;
                             //collisionFound = true;
 
-                            //TODO: REVISAR ESTO, caso embebido a analizar con mÃ¡s detalle
+                            //TODO: REVISAR ESTO, caso embebido a analizar con más detalle
                             sphereIntersectionPoint = originalSphereCenter - pNormal * characterSphere.Radius;
                             if (pointInBounbingBoxFace(planeIntersectionPoint, bbFace))
                             {
                                 if (embebbed)
                                 {
-                                    //TODO: REVISAR ESTO, nunca deberÃ­a pasar
-                                    //throw new Exception("El polÃ­gono estÃ¡ dentro de la esfera");
+                                    //TODO: REVISAR ESTO, nunca debería pasar
+                                    //throw new Exception("El polígono está dentro de la esfera");
                                 }
 
                                 collisionFound = true;
