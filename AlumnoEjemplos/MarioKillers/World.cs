@@ -31,6 +31,7 @@ namespace AlumnoEjemplos.MarioKillers
         {
             foreach (RigidBody body in this.Bodies)
             {
+                body.Impulses.Add(body.FRoz);
                 if (this.GravityEnabled)
                 {
                     if (body.affectedByGravity==true) {
@@ -41,6 +42,7 @@ namespace AlumnoEjemplos.MarioKillers
                 }
                 foreach (Impulse impulse in body.Impulses)
                 {
+                    body.antVelocity = body.LinearVelocity;
                     body.AngularMomentum += timeStep * impulse.Torque();
                     Matrix Aux = body.Orientation * body.InvInertiaTensor * Matrix.TransposeMatrix(body.Orientation);
                     body.AngularVelocity = Vector3.TransformCoordinate(body.AngularMomentum, Aux);

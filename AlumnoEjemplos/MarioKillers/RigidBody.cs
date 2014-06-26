@@ -13,9 +13,11 @@ namespace AlumnoEjemplos.MarioKillers
         private Vector3 position;
         public Matrix scale = Matrix.Scaling(new Vector3(1,1,1));
         public World world;
+        public Impulse FRoz = new Impulse(Vector3.Empty, Vector3.Empty);
         public bool affectedByGravity = true;
         public bool floorCollisionsEnabled = true;
         public bool strong = false;
+        public Vector3 antVelocity = Vector3.Empty;
         public Vector3 Position
         {
             get { return this.position; }
@@ -50,7 +52,7 @@ namespace AlumnoEjemplos.MarioKillers
 
         public TgcBoundingSphere BoundingSphere;
 
-        public float Elasticity = 1.0f;
+        public float Elasticity = 0.8f;
 
         public bool IsIntersectingWith(RigidBody other)
         {
@@ -303,8 +305,35 @@ namespace AlumnoEjemplos.MarioKillers
             //this.BoundingSphere.render();
             Vector3 planeNormal = TgcCollisionUtils.getPlaneNormal(staticBodieFace.Plane);
             float planeNormalVelocity = Vector3.Dot(LinearVelocity, planeNormal);
-            this.LinearVelocity -= Vector3.Multiply(planeNormal, planeNormalVelocity);
 
+            planeNormalVelocity = -(1.0f + this.Elasticity) * planeNormalVelocity;
+            this.LinearVelocity += Vector3.Multiply(planeNormal, planeNormalVelocity);
+
+            Vector3 Acceleration = LinearVelocity - antVelocity;
+            float PlaneNormalAcceleration = Vector3.Dot(Acceleration, planeNormal);
+            float RozForce = Mass * PlaneNormalAcceleration * 0.000002f;
+            Console.WriteLine(RozForce);
+            this.FRoz =new Impulse(Vector3.Multiply(Vector3.Normalize(-LinearVelocity), RozForce), collisionPoint);
+
+            //float j1 = -(1.0f + this.Elasticity) * planeNormalVelocity;
+            //AngularMomentum += Vector3.Cross(collisionPoint, j1 * Vector3.Normalize(planeNormal));
+            //WorldMomentsInverse
+            //Matrix WorldMomentsInverse = this.Orientation * this.InvInertiaTensor * Matrix.TransposeMatrix(this.Orientation);
+            //AngularVelocity = Vector3.TransformCoordinate(AngularMomentum,WorldMomentsInverse);
+
+            /*
+            Vector3 RelativeCollisionPoint = collisionPoint - this.Position;
+            Vector3 velocity1 = LinearVelocity + Vector3.Cross(AngularVelocity, RelativeCollisionPoint);
+            Vector3 CollisionNormal = Vector3.Normalize(collisionPoint - this.Position);
+            //Compute angular factor
+            Vector3 angularFactor = Vector3.Cross(RelativeCollisionPoint,CollisionNormal);
+            //Just current body elasticity affects velocity since the target object is static
+            Vector3   = -(1.0f + this.Elasticity) * modifiedVel;
+
+
+
+
+            AngularMomentum+= Vector3.Cross(collisionPoint,j1*/
             //this.world.GravityEnabled = false;
         }
 
