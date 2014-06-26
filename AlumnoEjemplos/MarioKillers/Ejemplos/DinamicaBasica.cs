@@ -44,7 +44,7 @@ namespace AlumnoEjemplos.MarioKillers
             GuiController.Instance.RotCamera.setCamera(new Vector3(0, 0, 0), 100);
             this.modifiers.addBoolean("GravityEnabled", "Gravedad", false);
             this.box = TgcBox.fromSize(new Vector3(0,0,0),new Vector3(10, 10, 10),texture).toMesh("caja");
-            this.rigidBody = new RigidBody(5f, box);
+            this.rigidBody = new RigidBody(5f, box,world);
             this.world = new World();
             this.world.AddBody(rigidBody);
         }

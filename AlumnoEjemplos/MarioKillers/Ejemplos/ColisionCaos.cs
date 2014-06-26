@@ -37,7 +37,7 @@ namespace AlumnoEjemplos.MarioKillers.Ejemplos
             world.DebugEnabled = true;
             for (int i = 0; i < 30; i++)
             {
-                RigidBody createdBody = new RigidBody(5.0f, TgcBox.fromSize(new Vector3(10, 10, 10), colors[rng.Next(colors.Count)]).toMesh(""));
+                RigidBody createdBody = new RigidBody(5.0f, TgcBox.fromSize(new Vector3(10, 10, 10), colors[rng.Next(colors.Count)]).toMesh(""),world);
                 createdBody.Position = new Vector3(rng.Next(-100, 100), rng.Next(-100, 100), rng.Next(-100, 100));
                 world.Bodies.Add(createdBody);
             }

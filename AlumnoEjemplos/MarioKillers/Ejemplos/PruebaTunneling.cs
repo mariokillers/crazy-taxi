@@ -36,8 +36,8 @@ namespace AlumnoEjemplos.MarioKillers.Ejemplos
         {
             world = new World();
             world.DebugEnabled = true;
-            body1 = new RigidBody(1, TgcBox.fromSize(new Vector3(1, 1, 1), Color.Red).toMesh(""));
-            body2 = new RigidBody(1, TgcBox.fromSize(new Vector3(1, 1, 1), Color.Green).toMesh(""));
+            body1 = new RigidBody(1, TgcBox.fromSize(new Vector3(1, 1, 1), Color.Red).toMesh(""),world);
+            body2 = new RigidBody(1, TgcBox.fromSize(new Vector3(1, 1, 1), Color.Green).toMesh(""),world);
             world.AddBody(body1);
             world.AddBody(body2);
             reset();

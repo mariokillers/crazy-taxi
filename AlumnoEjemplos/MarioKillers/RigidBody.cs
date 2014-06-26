@@ -9,7 +9,13 @@ namespace AlumnoEjemplos.MarioKillers
 {
     public class RigidBody
     {
+        const float EPSILON = 0.00000001f;
         private Vector3 position;
+        public Matrix scale = Matrix.Scaling(new Vector3(1,1,1));
+        public World world;
+        public bool affectedByGravity = true;
+        public bool floorCollisionsEnabled = true;
+        public bool strong = false;
         public Vector3 Position
         {
             get { return this.position; }
@@ -53,16 +59,18 @@ namespace AlumnoEjemplos.MarioKillers
             return Vector3.Dot(centerDiff, centerDiff) <= radiusSum * radiusSum;
         }
 
-        public RigidBody(float mass, TgcMesh Mesh)
+        public RigidBody(float mass, TgcMesh Mesh, World World)
         {
+            this.world = World;
             this.Mesh = Mesh;
             this.Mesh.AutoTransformEnable = false;
             if (mass <= 0.0) throw new ArgumentException("A rigid body's mass must be positive");
             this.Mass = mass;
-            this.InvInertiaTensor = Matrix.Invert(boxInertiaTensor(10, 10, 10, mass));
             this.BoundingSphere = boundingSphereFromPoints(Mesh.getVertexPositions());
         }
-
+        public void updateBoundingSphere(){
+            this.BoundingSphere = boundingSphereFromPoints(Mesh.getVertexPositions());
+        }
         /// <summary>
         /// Applies an impulse force to the body at its center.
         /// New position and velocity values will be calculated when the
@@ -111,8 +119,14 @@ namespace AlumnoEjemplos.MarioKillers
             if (vDotN < 0) return;
             // Calculate impulse factor
             float modifiedVel = vDotN / (1.0f / this.Mass + 1.0f / other.Mass);
+            
             float j1 = -(1.0f + this.Elasticity) * modifiedVel;
             float j2 = -(1.0f + other.Elasticity) * modifiedVel;
+            /*if (other.strong)
+            {
+                j1 += j2;
+                j2 -= j1;
+            }*/
             // Update velocities
             this.LinearVelocity += j1 / this.Mass * collisionNormal(other);
             other.LinearVelocity -= j2 / other.Mass * collisionNormal(other);
@@ -165,6 +179,148 @@ namespace AlumnoEjemplos.MarioKillers
             float radius = vertices.Max(v => (v - this.Position).Length());
             return new TgcBoundingSphere(center, radius);
         }
-    }
 
+
+        /// <summary>
+        /// Detección de colisiones recursiva
+        /// </summary>
+        public void doCollideWithWorld(Vector3 movementVector, int recursionDepth)
+        {
+            //Console.WriteLine(this.BoundingSphere.Radius);
+            //Vector3 movementVector = this.LinearVelocity;
+            TgcBoundingSphere characterSphere = this.BoundingSphere;
+            List<TgcMesh> obstaculos = this.world.staticBodies;
+            //Limitar recursividad
+            if (recursionDepth > 5)
+            {
+                return;
+            }
+
+            //Ver si la distancia a recorrer es para tener en cuenta
+            float distanceToTravelSq = movementVector.LengthSq();
+            //if (distanceToTravelSq < EPSILON)
+            //{
+              //  return;
+            //}
+
+            //Posicion deseada
+            Vector3 originalSphereCenter = characterSphere.Center;
+            Vector3 nextSphereCenter = originalSphereCenter + movementVector;
+
+            //Buscar el punto de colision mas cercano de todos los objetos candidatos
+            float minCollisionDistSq = float.MaxValue;
+            Vector3 realMovementVector = movementVector;
+            TgcBoundingBox.Face collisionFace = null;
+            TgcBoundingBox collisionObstacle = null;
+            Vector3 nearestPolygonIntersectionPoint = Vector3.Empty;
+            foreach (TgcMesh obstaculo in obstaculos)
+            {
+                TgcBoundingBox obstaculoBB = obstaculo.BoundingBox;
+                obstaculoBB.render();
+                //Obtener los polígonos que conforman las 6 caras del BoundingBox
+                TgcBoundingBox.Face[] bbFaces = obstaculoBB.computeFaces();
+                
+
+                foreach (TgcBoundingBox.Face bbFace in bbFaces)
+                {
+                    Vector3 pNormal = TgcCollisionUtils.getPlaneNormal(bbFace.Plane);
+
+                    TgcRay movementRay = new TgcRay(originalSphereCenter, movementVector);
+                    float brutePlaneDist;
+                    Vector3 brutePlaneIntersectionPoint;
+                    if (!TgcCollisionUtils.intersectRayPlane(movementRay, bbFace.Plane, out brutePlaneDist, out brutePlaneIntersectionPoint))
+                    {
+                        continue;
+                    }
+
+                    float movementRadiusLengthSq = Vector3.Multiply(movementVector, characterSphere.Radius).LengthSq();
+                    /*if (brutePlaneDist * brutePlaneDist > movementRadiusLengthSq)
+                    {
+                       continue;
+                   }*/
+
+
+                    //Obtener punto de colisión en el plano, según la normal del plano
+                    float pDist;
+                    Vector3 planeIntersectionPoint;
+                    Vector3 sphereIntersectionPoint = Vector3.Empty;
+                    TgcRay planeNormalRay = new TgcRay(originalSphereCenter, -pNormal);
+                    bool embebbed = false;
+                    bool collisionFound = false;
+                    if (TgcCollisionUtils.intersectRayPlane(planeNormalRay, bbFace.Plane, out pDist, out planeIntersectionPoint))
+                    {
+                        //Console.WriteLine("PDIST:"+ pDist);
+                        //Console.WriteLine("RADIUS" + characterSphere.Radius);
+                        //Ver si el plano está embebido en la esfera
+                        if (pDist <= characterSphere.Radius)
+                        {
+                            embebbed = true;
+                            //collisionFound = true;
+
+                            //TODO: REVISAR ESTO, caso embebido a analizar con más detalle
+                            sphereIntersectionPoint = originalSphereCenter - pNormal * characterSphere.Radius;
+                            if (pointInBounbingBoxFace(planeIntersectionPoint, bbFace))
+                            {
+                                if (embebbed)
+                                {
+                                    //TODO: REVISAR ESTO, nunca debería pasar
+                                    //throw new Exception("El polígono está dentro de la esfera");
+                                }
+
+                                collisionFound = true;
+                            }
+                        }
+                       
+
+                        if (collisionFound)
+                        {
+                            this.HandleStaticCollisionWith(sphereIntersectionPoint, bbFace, obstaculoBB);
+                            //Nuevo vector de movimiento acotado
+                            /*newMovementVector = polygonIntersectionPoint - sphereIntersectionPoint;
+                            newMoveDistSq = newMovementVector.LengthSq();
+
+                            if (newMoveDistSq <= distanceToTravelSq && newMoveDistSq < minCollisionDistSq)
+                            {
+                                minCollisionDistSq = newMoveDistSq;
+                                realMovementVector = newMovementVector;
+                                nearestPolygonIntersectionPoint = polygonIntersectionPoint;
+                                collisionFace = bbFace;
+                                collisionObstacle = obstaculoBB;
+
+                            }*/
+                        }
+                    }
+                }
+
+            }
+
+
+        }
+
+        public void HandleStaticCollisionWith(Vector3 collisionPoint, TgcBoundingBox.Face staticBodieFace, TgcBoundingBox staticBody)
+        {
+            //this.LinearVelocity = Vector3.Empty;
+            //this.BoundingSphere.render();
+            Vector3 planeNormal = TgcCollisionUtils.getPlaneNormal(staticBodieFace.Plane);
+            float planeNormalVelocity = Vector3.Dot(LinearVelocity, planeNormal);
+            this.LinearVelocity -= Vector3.Multiply(planeNormal, planeNormalVelocity);
+
+            //this.world.GravityEnabled = false;
+        }
+
+        /// <summary>
+        /// Ver si un punto pertenece a una cara de un BoundingBox
+        /// </summary>
+        /// <returns>True si pertenece</returns>
+        private bool pointInBounbingBoxFace(Vector3 p, TgcBoundingBox.Face bbFace)
+        {
+            Vector3 min = bbFace.Extremes[0];
+            Vector3 max = bbFace.Extremes[3];
+
+            return p.X >= min.X && p.Y >= min.Y && p.Z >= min.Z &&
+               p.X <= max.X && p.Y <= max.Y && p.Z <= max.Z;
+        }
+
+
+    }
 }

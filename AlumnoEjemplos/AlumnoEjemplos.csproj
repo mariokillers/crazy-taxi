@@ -91,6 +91,7 @@
     <Compile Include="MarioKillers\Ejemplos\ColisionEsferas.cs" />
     <Compile Include="MarioKillers\Ejemplos\DinamicaBasica.cs" />
     <Compile Include="MarioKillers\EjemploAlumno.cs" />
+    <Compile Include="MarioKillers\Ejemplos\Pool.cs" />
     <Compile Include="MarioKillers\Ejemplos\PruebaTunneling.cs" />
     <Compile Include="MarioKillers\Impulse.cs" />
     <Compile Include="MarioKillers\RigidBody.cs" />

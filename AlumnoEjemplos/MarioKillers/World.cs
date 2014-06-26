@@ -1,11 +1,14 @@
 ﻿using Microsoft.DirectX;
 
 using System.Collections.Generic;
+using TgcViewer.Utils.TgcGeometry;
+using TgcViewer.Utils.TgcSceneLoader;
 
 namespace AlumnoEjemplos.MarioKillers
 {
     public class World
     {
+        public List<TgcMesh> staticBodies = new List<TgcMesh>();
         public List<RigidBody> Bodies = new List<RigidBody>();
         /// <summary>
         /// The acceleration of gravity, in m/s^2.
@@ -30,7 +33,11 @@ namespace AlumnoEjemplos.MarioKillers
             {
                 if (this.GravityEnabled)
                 {
-                    body.LinearVelocity += this.GravityAcceleration * timeStep;
+                    if (body.affectedByGravity==true) {
+                        body.ApplyImpulse(new Vector3(0, -0.98f * body.Mass, 0));
+                    }
+                    //body.LinearVelocity += this.GravityAcceleration * timeStep;
+                    
                 }
                 foreach (Impulse impulse in body.Impulses)
                 {
@@ -48,7 +55,9 @@ namespace AlumnoEjemplos.MarioKillers
                         body.LinearVelocity += Vector3.Cross(body.AngularVelocity, impulse.RelativePosition);
                     }
                 }
-                body.Transform = body.Orientation * Matrix.Translation(body.Position);
+                body.Transform =  body.scale*body.Orientation * Matrix.Translation(body.Position);
+                if (body.floorCollisionsEnabled) { body.doCollideWithWorld(body.LinearVelocity * timeStep, 0); }
+               
                 body.Position += body.LinearVelocity * timeStep;
                 // Impulses have to be removed, otherwise they will be integrated next frame
                 body.Impulses.Clear();
@@ -80,6 +89,11 @@ namespace AlumnoEjemplos.MarioKillers
             this.Bodies.Add(body);
         }
 
+        public void AddStaticBody(TgcMesh mesh)
+        {
+            this.staticBodies.Add(mesh);
+        }
+
         public void Render()
         {
             foreach (RigidBody body in this.Bodies)
@@ -89,6 +103,11 @@ namespace AlumnoEjemplos.MarioKillers
                     body.BoundingSphere.render();
                 }
                 body.Render();
+            }
+            foreach(TgcMesh staticBody in this.staticBodies)
+            {
+                staticBody.render();
+                
             }
         }
 
